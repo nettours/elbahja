@@ -414,6 +414,8 @@ section{padding:85px 5%;}
   .adm-sidebar{width:195px;}.adm-main{margin-right:195px;}
 }
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -688,20 +690,145 @@ section{padding:85px 5%;}
 </div>
 
 <script>
+/* ══════════════════════════════════════════
+   🔥 FIREBASE CONFIG
+   ➡ ضع هنا إعدادات مشروعك من Firebase Console
+   console.firebase.google.com
+══════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBN0wZpI7uQus7wQRY_IqWIFOXqUfeZD8E",
+    authDomain: "albahja-9ccda.firebaseapp.com",
+    projectId: "albahja-9ccda",
+    storageBucket: "albahja-9ccda.firebasestorage.app",
+    messagingSenderId: "347542578833",
+    appId: "1:347542578833:web:472f51687e616896424130",
+    <!-- measuremetId: "G-7P723DDN4W" -->
+};
+
+/* ══════════════════════════════════════════
+   DB HELPERS — كل العمليات هنا
+══════════════════════════════════════════ */
+let DB = null;           // Firebase database ref
+let fbReady = false;     // هل Firebase جاهز؟
+let localOrders = [];    // نسخة محلية من الطلبات (للأدمين)
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    DB = firebase.database();
+    fbReady = true;
+    console.log('✅ Firebase متصل');
+    // Admin: استمع للطلبات الجديدة مباشرة
+    DB.ref('orders').orderByChild('timestamp').on('value', snap => {
+      localOrders = [];
+      snap.forEach(child => localOrders.unshift({fireKey: child.key, ...child.val()}));
+      // تحديث واجهة الأدمين إذا كانت مفتوحة
+      if(document.getElementById('pgAdmin').classList.contains('on')){
+        const ap = document.querySelector('.adm-page.on')?.id;
+        if(ap==='ap-dash') renderDash();
+        if(ap==='ap-orders') renderOrders(curFilter);
+        if(ap==='ap-stats') renderStats();
+        updBadge();
+        // إشعار بطلب جديد
+        checkNewOrders();
+      }
+    });
+  } catch(e){
+    console.warn('⚠ Firebase غير مهيأ — تأكد من إعداد الـ Config', e);
+    fbReady = false;
+    showSetupBanner();
+  }
+}
+
+function showSetupBanner(){
+  // تظهر رسالة للأدمين فقط إذا لم يُهيأ Firebase
+  if(!document.getElementById('fb-setup-banner')){
+    const b = document.createElement('div');
+    b.id = 'fb-setup-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#E74C3C;color:#fff;padding:12px 20px;text-align:center;z-index:9998;font-size:.9rem;font-family:Tajawal,sans-serif;';
+    b.innerHTML = '⚠ Firebase غير مهيأ — الطلبات لن تُزامن بين الأجهزة. <a href="#" onclick="showFirebaseGuide()" style="color:#fff;font-weight:700;text-decoration:underline">كيفية الإعداد</a> <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,.3);border:none;color:#fff;padding:3px 10px;border-radius:5px;cursor:pointer;margin-right:10px">✕</button>';
+    document.body.prepend(b);
+  }
+}
+
+function showFirebaseGuide(){
+  alert(
+    '📋 خطوات إعداد Firebase (مجاني):\n\n' +
+    '1. اذهب إلى: console.firebase.google.com\n' +
+    '2. أنشئ مشروعاً جديداً (اسمه مثلاً: albahja)\n' +
+    '3. من القائمة اختر: Realtime Database\n' +
+    '4. أنشئ قاعدة البيانات (اختر: Start in test mode)\n' +
+    '5. من إعدادات المشروع ← General ← Your apps\n' +
+    '   أنشئ Web app وانسخ الـ firebaseConfig\n' +
+    '6. افتح ملف الموقع وضع الإعدادات في FIREBASE_CONFIG\n\n' +
+    '✅ بعدها الطلبات ستصلك فوراً من أي جهاز!'
+  );
+}
+
+/* حفظ طلب جديد في Firebase */
+async function saveOrderToDB(order){
+  if(!fbReady){
+    // Fallback: localStorage فقط على نفس الجهاز
+    const all = JSON.parse(localStorage.getItem('bahja_orders')||'[]');
+    all.unshift(order);
+    localStorage.setItem('bahja_orders', JSON.stringify(all));
+    return;
+  }
+  try{
+    await DB.ref('orders').push(order);
+  } catch(e){
+    console.warn('خطأ في حفظ الطلب:', e);
+  }
+}
+
+/* تحديث حالة طلب في Firebase */
+async function updateOrderInDB(fireKey, status){
+  if(!fbReady || !fireKey){
+    // fallback localStorage
+    const ords = JSON.parse(localStorage.getItem('bahja_orders')||'[]');
+    const i = ords.findIndex(o=>o.id===fireKey||o.fireKey===fireKey);
+    if(i>-1){ ords[i].status=status; localStorage.setItem('bahja_orders',JSON.stringify(ords)); }
+    return;
+  }
+  try{
+    await DB.ref('orders/'+fireKey).update({status});
+  } catch(e){ console.warn('خطأ في تحديث الطلب:', e); }
+}
+
+/* جلب الطلبات (للأدمين) */
+function getOrds(){
+  if(fbReady) return localOrders;
+  return JSON.parse(localStorage.getItem('bahja_orders')||'[]');
+}
+function saveOrds(o){ localStorage.setItem('bahja_orders',JSON.stringify(o)); }
+
+/* كشف الطلبات الجديدة للإشعار */
+let lastKnownIds = new Set();
+function checkNewOrders(){
+  const newOnes = localOrders.filter(o => o.status==='new' && !seen.has(o.id) && !lastKnownIds.has(o.id));
+  if(newOnes.length){
+    const o = newOnes[0];
+    lastKnownIds.add(o.id);
+    document.getElementById('noaBody').innerHTML =
+      '<strong>'+o.name+'</strong> — '+o.typeLabel+'<br>'+
+      o.items.slice(0,3).map(i=>i.emoji+' '+i.name).join(' · ')+'<br>'+
+      '<strong style="color:var(--gold)">'+o.total.toLocaleString('ar-DZ')+' دج</strong>';
+    const noa=document.getElementById('noa');
+    noa.classList.add('on');
+    setTimeout(()=>noa.classList.remove('on'),6000);
+    playSound(); updBadge();
+  }
+}
+
 /* PAGE SYSTEM */
 function showPage(id){
-  // Hide all
   document.getElementById('pgRestaurant').classList.add('off');
   document.getElementById('pgRestaurant').classList.remove('on');
   document.getElementById('pgAdminLogin').classList.remove('on');
   document.getElementById('pgAdmin').classList.remove('on');
-  // Show target
   const el = document.getElementById(id);
-  if(id === 'pgRestaurant'){
-    el.classList.remove('off');
-  } else {
-    el.classList.add('on');
-  }
+  if(id === 'pgRestaurant') el.classList.remove('off');
+  else el.classList.add('on');
   if(id !== 'pgRestaurant') window.scrollTo(0,0);
 }
 
@@ -805,13 +932,14 @@ function doOrder(){
   document.getElementById('cartForm').style.display='none';
   document.getElementById('succScr').classList.add('on');
   document.getElementById('cartFoot').style.display='none';
-  const order={id:onum,timestamp:new Date().toISOString(),name,phone,type,typeLabel:tl,address:addr,notes,total,
-    items:cart.map(i=>({name:i.name,emoji:i.emoji,qty:i.qty,price:i.price})),status:'new'};
-  try{
-    const all=JSON.parse(localStorage.getItem('bahja_orders')||'[]');
-    all.unshift(order);localStorage.setItem('bahja_orders',JSON.stringify(all));
-    localStorage.setItem('bahja_last_order',JSON.stringify({...order,_ts:Date.now()}));
-  }catch(e){}
+  const order={
+    id:onum, timestamp:new Date().toISOString(),
+    name, phone, type, typeLabel:tl, address:addr, notes, total,
+    items:cart.map(i=>({name:i.name,emoji:i.emoji,qty:i.qty,price:i.price})),
+    status:'new'
+  };
+  // 🔥 حفظ في Firebase (يصل للأدمين فوراً على أي جهاز)
+  saveOrderToDB(order);
   cart=[];updateCnt();cartStep='success';
   setTimeout(()=>{
     closeCart();
@@ -856,9 +984,7 @@ function showAdmPage(id,el){
   if(id==='ap-stats')renderStats();
 }
 
-/* DATA */
-function getOrds(){return JSON.parse(localStorage.getItem('bahja_orders')||'[]');}
-function saveOrds(o){localStorage.setItem('bahja_orders',JSON.stringify(o));}
+/* DATA - getOrds now comes from Firebase (defined above in DB HELPERS) */
 let curFilter='all',seen=new Set(JSON.parse(localStorage.getItem('bahja_seen')||'[]'));
 function markSeen(id){seen.add(id);localStorage.setItem('bahja_seen',JSON.stringify([...seen]));}
 const SL={new:'🔴 جديد',preparing:'🟠 يتحضر',ready:'🟣 جاهز',delivered:'🟢 مُسلَّم',cancelled:'⚫ ملغي'};
@@ -883,7 +1009,8 @@ function renderOrders(f='all'){
 }
 function rowHTML(o){
   const isNew=!seen.has(o.id)&&o.status==='new';
-  return'<div class="orow'+(isNew?' flash':'')+'" onclick="openModal(\''+o.id+'\')">'
+  const fk = o.fireKey || o.id; // مفتاح Firebase
+  return'<div class="orow'+(isNew?' flash':'')+'" onclick="openModal(\''+fk+'\')">'
     +'<div class="oid">'+o.id+'</div>'
     +'<div><div class="oclient">'+o.name+'</div><div class="ophone">'+o.phone+'</div></div>'
     +'<div><span class="tbadge '+(TC[o.type]||'')+'">'+o.typeLabel+'</span></div>'
@@ -894,8 +1021,10 @@ function rowHTML(o){
 }
 function filterOrds(f,btn){document.querySelectorAll('.ftabs .ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderOrders(f);}
 
-function openModal(id){
-  const o=getOrds().find(x=>x.id===id);if(!o)return;markSeen(id);updBadge();
+function openModal(fk){
+  const o=getOrds().find(x=>x.fireKey===fk||x.id===fk);if(!o)return;
+  const orderFk = o.fireKey || fk;
+  markSeen(o.id);updBadge();
   document.getElementById('mTitle').textContent='طلب '+o.id;
   document.getElementById('mBody').innerHTML=
     '<div class="drow"><span class="dkey">رقم الطلب</span><span class="dval" style="font-family:Amiri,serif;color:var(--gold);font-size:1.15rem">'+o.id+'</span></div>'
@@ -908,17 +1037,17 @@ function openModal(id){
     +'<div class="drow"><span class="dkey">الأطباق</span><div>'+o.items.map(i=>'<div class="iline"><span class="iname">'+i.emoji+' '+i.name+' ×'+i.qty+'</span><span class="iprice">'+(i.price*i.qty).toLocaleString('ar-DZ')+' دج</span></div>').join('')+'</div></div>'
     +'<div class="mtotal"><span>المجموع الكلي</span><span>'+o.total.toLocaleString('ar-DZ')+' دج</span></div>';
   const ac=document.getElementById('mActs');ac.innerHTML='';
-  if(o.status==='new'){ac.innerHTML='<button class="mab mab-prep" onclick="setStatus(\''+id+'\',\'preparing\')">🔥 بدء التحضير</button><button class="mab mab-cancel" onclick="setStatus(\''+id+'\',\'cancelled\')">✕ إلغاء</button>';}
-  if(o.status==='preparing'){ac.innerHTML='<button class="mab mab-ready" onclick="setStatus(\''+id+'\',\'ready\')">🟣 جاهز</button><button class="mab mab-cancel" onclick="setStatus(\''+id+'\',\'cancelled\')">✕ إلغاء</button>';}
-  if(o.status==='ready'){ac.innerHTML='<button class="mab mab-done" onclick="setStatus(\''+id+'\',\'delivered\')">✅ تم التسليم</button>';}
+  if(o.status==='new'){ac.innerHTML='<button class="mab mab-prep" onclick="setStatus(\''+orderFk+'\',\'preparing\')">🔥 بدء التحضير</button><button class="mab mab-cancel" onclick="setStatus(\''+orderFk+'\',\'cancelled\')">✕ إلغاء</button>';}
+  if(o.status==='preparing'){ac.innerHTML='<button class="mab mab-ready" onclick="setStatus(\''+orderFk+'\',\'ready\')">🟣 جاهز</button><button class="mab mab-cancel" onclick="setStatus(\''+orderFk+'\',\'cancelled\')">✕ إلغاء</button>';}
+  if(o.status==='ready'){ac.innerHTML='<button class="mab mab-done" onclick="setStatus(\''+orderFk+'\',\'delivered\')">✅ تم التسليم</button>';}
   if(['delivered','cancelled'].includes(o.status)){ac.innerHTML='<span style="color:var(--muted);font-size:.88rem">الطلب '+SL[o.status]+'</span>';}
   document.getElementById('modalOv').classList.add('on');
 }
 function setStatus(id,status){
-  const ords=getOrds(),i=ords.findIndex(o=>o.id===id);
-  if(i>-1){ords[i].status=status;saveOrds(ords);}
+  // id هنا هو fireKey من Firebase
+  updateOrderInDB(id, status);
   document.getElementById('modalOv').classList.remove('on');
-  renderDash();renderOrders(curFilter);updBadge();
+  // الواجهة ستتحدث تلقائياً عبر onValue listener
 }
 
 function renderStats(){
@@ -946,19 +1075,7 @@ function playSound(){
   if(!document.getElementById('togSound').classList.contains('on'))return;
   try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[880,660,880].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.28,ctx.currentTime+i*.15);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.15+.2);o.start(ctx.currentTime+i*.15);o.stop(ctx.currentTime+i*.15+.2);});}catch(e){}
 }
-let lastTS=null;
-function poll(){
-  if(!document.getElementById('pgAdmin').classList.contains('on'))return;
-  try{const raw=localStorage.getItem('bahja_last_order');if(!raw)return;
-    const o=JSON.parse(raw);if(o._ts&&o._ts!==lastTS){lastTS=o._ts;if(!seen.has(o.id)){
-      document.getElementById('noaBody').innerHTML='<strong>'+o.name+'</strong> — '+o.typeLabel+'<br>'+o.items.slice(0,3).map(i=>i.emoji+' '+i.name).join(' · ')+'<br><strong style="color:var(--gold)">'+o.total.toLocaleString('ar-DZ')+' دج</strong>';
-      const noa=document.getElementById('noa');noa.classList.add('on');setTimeout(()=>noa.classList.remove('on'),6000);
-      playSound();updBadge();
-      const ap=document.querySelector('.adm-page.on')?.id;
-      if(ap==='ap-dash')renderDash();if(ap==='ap-orders')renderOrders(curFilter);
-    }}
-  }catch(e){}
-}
+let lastTS=null; // kept for compat but not used with Firebase
 function saveSettings(){
   const u=document.getElementById('setUser').value.trim(),p=document.getElementById('setPass').value;
   const c=JSON.parse(localStorage.getItem('bahja_creds')||'{"user":"admin","pass":"admin123"}');
@@ -970,8 +1087,10 @@ function tickClock(){const el=document.getElementById('clk');if(el)el.textConten
 let admStarted=false;
 function initAdmin(){
   renderDash();updBadge();tickClock();
-  if(!admStarted){admStarted=true;setInterval(tickClock,1000);setInterval(poll,2000);
-    const raw=localStorage.getItem('bahja_last_order');if(raw)try{lastTS=JSON.parse(raw)._ts;}catch(e){}
+  if(!admStarted){
+    admStarted=true;
+    setInterval(tickClock,1000);
+    // Firebase يتعامل مع التحديثات تلقائياً — لا حاجة لـ polling
   }
 }
 
@@ -979,6 +1098,8 @@ function initAdmin(){
 // Run immediately — don't wait for load event
 (function(){
   try{ renderMenu(); }catch(e){}
+  // Init Firebase for cross-device order sync
+  try{ initFirebase(); }catch(e){ console.warn('Firebase init error:', e); }
 })();
 
 // Hide loader after fonts/assets load (or after 3s max)
