@@ -29,8 +29,14 @@ body{font-family:'Tajawal',sans-serif;overflow-x:hidden;}
 @keyframes glow{0%,100%{opacity:.3;transform:scale(.95)}50%{opacity:1;transform:scale(1.05)}}
 
 /* ══════════ PAGE SYSTEM ══════════ */
-.page{display:none;}
-.page.on{display:block;}
+/* Restaurant is visible by default — JS hides it only when navigating to admin */
+#pgRestaurant{display:block;}
+#pgAdminLogin{display:none;}
+#pgAdmin{display:none;}
+/* .on class used by JS to switch views */
+#pgRestaurant.off{display:none;}
+#pgAdminLogin.on{display:flex !important;}
+#pgAdmin.on{display:block !important;}
 
 /* ╔══════════════════════════════════╗
    ║       RESTAURANT PAGE            ║
@@ -684,9 +690,19 @@ section{padding:85px 5%;}
 <script>
 /* PAGE SYSTEM */
 function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  if(id!=='pgRestaurant') window.scrollTo(0,0);
+  // Hide all
+  document.getElementById('pgRestaurant').classList.add('off');
+  document.getElementById('pgRestaurant').classList.remove('on');
+  document.getElementById('pgAdminLogin').classList.remove('on');
+  document.getElementById('pgAdmin').classList.remove('on');
+  // Show target
+  const el = document.getElementById(id);
+  if(id === 'pgRestaurant'){
+    el.classList.remove('off');
+  } else {
+    el.classList.add('on');
+  }
+  if(id !== 'pgRestaurant') window.scrollTo(0,0);
 }
 
 /* MENU DATA */
@@ -960,11 +976,19 @@ function initAdmin(){
 }
 
 /* BOOT */
-window.addEventListener('load',()=>{
-  renderMenu();
-  showPage('pgRestaurant');
-  setTimeout(()=>document.getElementById('loader').classList.add('gone'),1000);
-});
+// Run immediately — don't wait for load event
+(function(){
+  try{ renderMenu(); }catch(e){}
+})();
+
+// Hide loader after fonts/assets load (or after 3s max)
+function hideLdr(){
+  var l=document.getElementById('loader');
+  if(l) l.classList.add('gone');
+}
+window.addEventListener('load', hideLdr);
+setTimeout(hideLdr, 3000); // fallback
+
 </script>
 </body>
 </html>
