@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمين — مطعم البهجة</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-l:#E8C96A;--dark:#1A1008;--dark2:#2C1A0E;
+  --sb:#0E0905;--bg:#F5EDD8;--bg2:#EDE0C4;--white:#FFFDF5;--cream:#FAF3E0;
+  --muted:#8A7055;--bdr:rgba(201,168,76,.18);
+  --green:#27AE60;--blue:#2980B9;--orange:#E67E22;--red:#E74C3C;--purple:#8E44AD;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);}
+
+/* LOGIN */
+#pgLogin{min-height:100vh;background:radial-gradient(ellipse at 40% 50%,rgba(201,168,76,.14),transparent 60%),linear-gradient(155deg,#0D0806,#1A1008,#2C1A0E);display:flex;align-items:center;justify-content:center;}
+.lbox{background:rgba(255,253,245,.055);border:1px solid rgba(201,168,76,.2);border-radius:20px;padding:46px 40px;width:350px;text-align:center;backdrop-filter:blur(10px);}
+.llogo{font-family:'Amiri',serif;font-size:2.3rem;color:var(--gold);margin-bottom:5px;}
+.lsub{color:rgba(250,243,224,.4);font-size:.8rem;margin-bottom:30px;}
+.llbl{display:block;text-align:right;color:rgba(250,243,224,.52);font-size:.78rem;margin-bottom:5px;}
+.linp{width:100%;padding:11px 13px;background:rgba(255,255,255,.07);border:1px solid rgba(201,168,76,.26);border-radius:9px;color:#FAF3E0;font-family:'Tajawal',sans-serif;font-size:.95rem;outline:none;margin-bottom:15px;transition:border-color .3s;}
+.linp:focus{border-color:var(--gold);}
+.linp::placeholder{color:rgba(250,243,224,.26);}
+.lbtn{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--dark);border:none;border-radius:9px;font-family:'Tajawal',sans-serif;font-size:.96rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.lbtn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(201,168,76,.36);}
+.lerr{color:var(--red);font-size:.8rem;margin-top:8px;min-height:17px;}
+.lback{margin-top:15px;display:block;color:rgba(201,168,76,.42);font-size:.78rem;cursor:pointer;background:none;border:none;font-family:'Tajawal',sans-serif;width:100%;transition:color .3s;text-decoration:none;}
+.lback:hover{color:var(--gold);}
+
+/* ADMIN APP */
+#pgAdmin{display:none;min-height:100vh;}
+#pgAdmin.on{display:flex;}
+.sb{width:230px;flex-shrink:0;background:var(--sb);display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;border-left:1px solid rgba(201,168,76,.1);z-index:50;}
+.sb-logo{padding:24px 17px 17px;border-bottom:1px solid rgba(201,168,76,.08);text-align:center;}
+.sb-logo h1{font-family:'Amiri',serif;font-size:1.4rem;color:var(--gold);}
+.sb-logo p{color:rgba(250,243,224,.3);font-size:.7rem;margin-top:3px;}
+.sb-menu{flex:1;padding:12px 0;}
+.sbi{display:flex;align-items:center;gap:10px;padding:11px 17px;color:rgba(250,243,224,.48);cursor:pointer;transition:all .2s;font-size:.86rem;font-weight:500;border-right:3px solid transparent;}
+.sbi:hover{color:var(--gold-l);background:rgba(201,168,76,.05);}
+.sbi.on{color:var(--gold);background:rgba(201,168,76,.08);border-right-color:var(--gold);}
+.sbi .si{font-size:1rem;width:19px;text-align:center;}
+.sbdg{margin-right:auto;background:var(--red);color:#fff;font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:8px;display:none;}
+.sbdg.on{display:inline-block;}
+.sb-foot{padding:12px 17px;border-top:1px solid rgba(201,168,76,.08);display:flex;flex-direction:column;gap:7px;}
+.sbtn{display:flex;align-items:center;gap:9px;color:rgba(250,243,224,.36);cursor:pointer;font-size:.8rem;transition:color .3s;background:none;border:none;font-family:'Tajawal',sans-serif;padding:0;text-align:right;}
+.sbtn:hover{color:var(--gold);}
+.sbtn.red:hover{color:var(--red);}
+
+.amain{margin-right:230px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--white);border-bottom:1px solid var(--bdr);padding:0 26px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.ttl{font-family:'Amiri',serif;font-size:1.3rem;color:var(--dark);}
+.tbr{display:flex;align-items:center;gap:12px;}
+.ldot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(39,174,96,.2);animation:lp 2s infinite;}
+@keyframes lp{0%,100%{box-shadow:0 0 0 3px rgba(39,174,96,.2)}50%{box-shadow:0 0 0 5px rgba(39,174,96,.08)}}
+.llbl2{font-size:.78rem;color:var(--muted);}
+.clk{font-size:.8rem;color:var(--muted);padding-left:12px;border-left:1px solid var(--bdr);}
+.bbell{position:relative;width:35px;height:35px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--bdr);cursor:pointer;}
+.bbadge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;font-size:.6rem;font-weight:700;display:none;align-items:center;justify-content:center;}
+
+.apg{flex:1;padding:20px 26px;display:none;}
+.apg.on{display:block;}
+
+/* STAT CARDS */
+.asrow{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px;}
+.asc{background:var(--white);border-radius:12px;padding:19px;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.04);position:relative;overflow:hidden;transition:transform .2s;}
+.asc:hover{transform:translateY(-3px);}
+.asc::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 12px 0 60px;opacity:.1;}
+.asc.g::before{background:var(--gold);}
+.asc.gr::before{background:var(--green);}
+.asc.b::before{background:var(--blue);}
+.asc.o::before{background:var(--orange);}
+.ascico{font-size:1.6rem;margin-bottom:8px;}
+.ascval{font-family:'Amiri',serif;font-size:2rem;color:var(--dark);line-height:1;}
+.asclbl{font-size:.74rem;color:var(--muted);margin-top:5px;}
+
+.ah{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.ah h2{font-family:'Amiri',serif;font-size:1.2rem;color:var(--dark);}
+.ftabs{display:flex;gap:7px;flex-wrap:wrap;}
+.ft{padding:5px 13px;border:1px solid var(--bdr);background:transparent;color:var(--muted);border-radius:17px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:.78rem;transition:all .2s;}
+.ft.on,.ft:hover{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:700;}
+
+/* ORDERS TABLE */
+.otbl{background:var(--white);border-radius:12px;border:1px solid var(--bdr);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);}
+.thead{display:grid;grid-template-columns:90px 1fr 120px 120px 120px 110px;background:rgba(201,168,76,.06);border-bottom:1px solid var(--bdr);padding:10px 17px;}
+.th{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.orow{display:grid;grid-template-columns:90px 1fr 120px 120px 120px 110px;padding:13px 17px;border-bottom:1px solid rgba(201,168,76,.08);align-items:center;transition:background .18s;cursor:pointer;}
+.orow:last-child{border-bottom:none;}
+.orow:hover{background:rgba(201,168,76,.04);}
+.orow.fl{animation:fl 2.5s ease;}
+@keyframes fl{0%{background:rgba(201,168,76,.22)}100%{background:transparent}}
+.oid{font-family:'Amiri',serif;font-size:.97rem;color:var(--gold);font-weight:700;}
+.ocl{font-weight:600;font-size:.87rem;margin-bottom:2px;}
+.oph{font-size:.74rem;color:var(--muted);}
+.tbdg{display:inline-flex;align-items:center;gap:4px;font-size:.74rem;padding:3px 9px;border-radius:8px;font-weight:600;}
+.t-del{background:rgba(41,128,185,.12);color:var(--blue);}
+.t-pick{background:rgba(39,174,96,.12);color:var(--green);}
+.t-dine{background:rgba(201,168,76,.13);color:#9A7018;}
+.otot{font-family:'Amiri',serif;font-size:1rem;color:var(--dark);font-weight:700;}
+.otm{font-size:.74rem;color:var(--muted);}
+.sbdge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;padding:4px 10px;border-radius:10px;font-weight:700;white-space:nowrap;}
+.s-new{background:rgba(231,76,60,.1);color:var(--red);}
+.s-prep{background:rgba(230,126,34,.1);color:var(--orange);}
+.s-rdy{background:rgba(142,68,173,.1);color:var(--purple);}
+.s-done{background:rgba(39,174,96,.1);color:var(--green);}
+.s-can{background:rgba(0,0,0,.05);color:#999;}
+.empt{padding:52px 18px;text-align:center;color:var(--muted);}
+.empt .be{font-size:3rem;display:block;margin-bottom:12px;}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(4px);z-index:300;opacity:0;visibility:hidden;transition:all .28s;display:flex;align-items:center;justify-content:center;}
+.mov.on{opacity:1;visibility:visible;}
+.modal{background:var(--white);border-radius:17px;width:min(510px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 24px 65px rgba(0,0,0,.2);transform:scale(.95) translateY(16px);transition:transform .3s cubic-bezier(.23,1,.32,1);border:1px solid var(--bdr);}
+.mov.on .modal{transform:scale(1) translateY(0);}
+.modal::-webkit-scrollbar{width:3px;}
+.modal::-webkit-scrollbar-thumb{background:var(--gold);}
+.mhd{background:var(--dark);padding:19px 22px;border-radius:17px 17px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.mhd h3{font-family:'Amiri',serif;font-size:1.3rem;color:var(--gold);}
+.mcls{background:rgba(255,255,255,.1);border:none;color:#FAF3E0;width:31px;height:31px;border-radius:50%;cursor:pointer;font-size:.9rem;}
+.mcls:hover{background:rgba(231,76,60,.38);}
+.mbdy{padding:20px;}
+.drow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(201,168,76,.09);gap:16px;}
+.drow:last-child{border-bottom:none;}
+.dkey{font-size:.8rem;color:var(--muted);font-weight:600;flex-shrink:0;}
+.dval{font-size:.87rem;color:#2C1A0E;}
+.iln{display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:4px;font-size:.82rem;}
+.iln-n{color:#2C1A0E;font-weight:500;}
+.iln-p{color:var(--gold);font-weight:700;font-family:'Amiri',serif;}
+.mtot{margin-top:12px;background:var(--dark);color:var(--gold);padding:12px 15px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
+.mtot span:last-child{font-family:'Amiri',serif;font-size:1.28rem;}
+.macts{padding:17px 20px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-wrap:wrap;}
+.mab{flex:1;min-width:95px;padding:8px;border:none;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.83rem;font-weight:700;cursor:pointer;transition:all .22s;}
+.mab:hover{transform:translateY(-2px);}
+.mab-p{background:rgba(230,126,34,.13);color:var(--orange);}
+.mab-r{background:rgba(142,68,173,.13);color:var(--purple);}
+.mab-d{background:rgba(39,174,96,.13);color:var(--green);}
+.mab-c{background:rgba(231,76,60,.1);color:var(--red);}
+
+/* CHARTS */
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin-bottom:20px;}
+.chcard{background:var(--white);border-radius:12px;padding:19px;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.chcard h3{font-family:'Amiri',serif;font-size:1rem;color:var(--dark);margin-bottom:15px;}
+.bch{display:flex;flex-direction:column;gap:8px;}
+.brow{display:flex;align-items:center;gap:8px;}
+.blbl{font-size:.76rem;color:var(--muted);min-width:72px;text-align:right;}
+.btrack{flex:1;background:var(--bg2);border-radius:4px;height:19px;overflow:hidden;}
+.bfill{height:100%;border-radius:4px;transition:width 1s ease;display:flex;align-items:center;padding-right:6px;}
+.bval{font-size:.72rem;font-weight:700;color:#fff;}
+.tch{display:flex;flex-direction:column;gap:12px;}
+.trow{display:flex;align-items:center;gap:10px;}
+.tdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tname{font-size:.83rem;flex:1;}
+.tcnt{font-family:'Amiri',serif;font-size:1rem;font-weight:700;}
+
+/* SETTINGS */
+.swrap{background:var(--white);border-radius:12px;padding:22px;border:1px solid var(--bdr);margin-bottom:17px;}
+.swrap h3{font-family:'Amiri',serif;font-size:1.1rem;color:var(--dark);margin-bottom:17px;padding-bottom:9px;border-bottom:1px solid var(--bdr);}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(201,168,76,.06);}
+.srow:last-child{border-bottom:none;}
+.sinf strong{display:block;font-size:.87rem;color:var(--dark);}
+.sinf span{font-size:.74rem;color:var(--muted);}
+.sinp{padding:7px 10px;border:1px solid var(--bdr);background:var(--bg);border-radius:7px;font-family:'Tajawal',sans-serif;font-size:.85rem;color:#2C1A0E;outline:none;width:185px;text-align:right;}
+.sinp:focus{border-color:var(--gold);}
+.tog{width:40px;height:21px;background:#ccc;border-radius:10px;cursor:pointer;position:relative;transition:background .3s;border:none;flex-shrink:0;}
+.tog.on{background:var(--green);}
+.tog::after{content:'';position:absolute;top:2px;right:2px;width:17px;height:17px;background:#fff;border-radius:50%;transition:right .3s;}
+.tog.on::after{right:calc(100% - 19px);}
+.savbtn{padding:9px 24px;background:linear-gradient(135deg,var(--dark),var(--dark2));color:var(--gold);border:none;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;}
+.savbtn:hover{transform:translateY(-2px);}
+
+/* NEW ORDER ALERT */
+.noa{position:fixed;bottom:26px;left:26px;background:var(--dark);border:2px solid var(--gold);border-radius:13px;padding:15px 19px;min-width:270px;z-index:800;transform:translateY(105px);opacity:0;transition:all .45s cubic-bezier(.23,1,.32,1);box-shadow:0 13px 34px rgba(0,0,0,.36);}
+.noa.on{transform:translateY(0);opacity:1;}
+.noa-ttl{font-family:'Amiri',serif;color:var(--gold);font-size:1.1rem;margin-bottom:4px;}
+.noa-bdy{color:rgba(250,243,224,.68);font-size:.8rem;line-height:1.55;}
+.noac{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.1);border:none;color:#FAF3E0;width:21px;height:21px;border-radius:50%;cursor:pointer;font-size:.72rem;}
+
+@media(max-width:880px){
+  .asrow{grid-template-columns:repeat(2,1fr);}
+  .thead,.orow{grid-template-columns:80px 1fr 100px 100px;}
+  .orow>*:nth-child(5),.thead>*:nth-child(5),.orow>*:nth-child(6),.thead>*:nth-child(6){display:none;}
+  .chrow{grid-template-columns:1fr;}
+  .sb{width:185px;}.amain{margin-right:185px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pgLogin">
+  <div class="lbox">
+    <div class="llogo">🔐 البهجة</div>
+    <div class="lsub">لوحة تحكم المطعم</div>
+    <label class="llbl">اسم المستخدم</label>
+    <input class="linp" id="lUsr" type="text" placeholder="admin" autocomplete="off">
+    <label class="llbl">كلمة المرور</label>
+    <input class="linp" id="lPw" type="password" placeholder="••••••••">
+    <button class="lbtn" onclick="doLogin()">دخول →</button>
+    <div class="lerr" id="lerr"></div>
+    <a href="albahja-restaurant.html" class="lback">← العودة إلى الموقع</a>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="pgAdmin">
+  <aside class="sb">
+    <div class="sb-logo"><h1>✦ البهجة</h1><p>لوحة تحكم المطعم</p></div>
+    <nav class="sb-menu">
+      <div class="sbi on" onclick="showPage('dash',this)"><span class="si">🏠</span>الرئيسية</div>
+      <div class="sbi" onclick="showPage('orders',this)"><span class="si">📋</span>الطلبات<span class="sbdg" id="nbdg">0</span></div>
+      <div class="sbi" onclick="showPage('stats',this)"><span class="si">📊</span>الإحصائيات</div>
+      <div class="sbi" onclick="showPage('settings',this)"><span class="si">⚙️</span>الإعدادات</div>
+    </nav>
+    <div class="sb-foot">
+      <a href="albahja-restaurant.html" class="sbtn" style="text-decoration:none"><span>🌐</span>موقع المطعم</a>
+      <button class="sbtn red" onclick="doLogout()"><span>🚪</span>تسجيل الخروج</button>
+    </div>
+  </aside>
+  <main class="amain">
+    <div class="topbar">
+      <div class="ttl" id="pgttl">لوحة التحكم</div>
+      <div class="tbr">
+        <span class="clk" id="clk">--:--</span>
+        <div style="display:flex;align-items:center;gap:5px"><div class="ldot"></div><span class="llbl2">متصل</span></div>
+        <div class="bbell" onclick="showPage('orders',document.querySelectorAll('.sbi')[1])">
+          🔔<span class="bbadge" id="bellbdg">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASH -->
+    <div class="apg on" id="pg-dash">
+      <div class="asrow">
+        <div class="asc g"><div class="ascico">📋</div><div class="ascval" id="sc-tot">0</div><div class="asclbl">طلبات اليوم</div></div>
+        <div class="asc gr"><div class="ascico">✅</div><div class="ascval" id="sc-dn">0</div><div class="asclbl">تم التوصيل</div></div>
+        <div class="asc b"><div class="ascico">⏳</div><div class="ascval" id="sc-pd">0</div><div class="asclbl">قيد التحضير</div></div>
+        <div class="asc o"><div class="ascico">💰</div><div class="ascval" id="sc-rv">0</div><div class="asclbl">الإيرادات (دج)</div></div>
+      </div>
+      <div class="ah"><h2>🔔 آخر الطلبات</h2><button class="ft" onclick="showPage('orders',document.querySelectorAll('.sbi')[1])">عرض الكل</button></div>
+      <div class="otbl" id="rectbl"><div class="empt"><span class="be">📭</span>لا توجد طلبات بعد</div></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="apg" id="pg-orders">
+      <div class="ah"><h2>📋 جميع الطلبات</h2>
+        <div class="ftabs">
+          <button class="ft on" onclick="filterOrds('all',this)">الكل</button>
+          <button class="ft" onclick="filterOrds('new',this)">🔴 جديد</button>
+          <button class="ft" onclick="filterOrds('preparing',this)">🟠 تحضير</button>
+          <button class="ft" onclick="filterOrds('ready',this)">🟣 جاهز</button>
+          <button class="ft" onclick="filterOrds('delivered',this)">🟢 مُسلَّم</button>
+          <button class="ft" onclick="filterOrds('cancelled',this)">⚫ ملغي</button>
+        </div>
+      </div>
+      <div class="otbl">
+        <div class="thead"><div class="th">الرقم</div><div class="th">الزبون</div><div class="th">النوع</div><div class="th">المجموع</div><div class="th">الوقت</div><div class="th">الحالة</div></div>
+        <div id="ordsbdy"></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="apg" id="pg-stats">
+      <div class="asrow">
+        <div class="asc g"><div class="ascico">📋</div><div class="ascval" id="st-tot">0</div><div class="asclbl">إجمالي الطلبات</div></div>
+        <div class="asc gr"><div class="ascico">💰</div><div class="ascval" id="st-rv">0</div><div class="asclbl">الإيرادات (دج)</div></div>
+        <div class="asc b"><div class="ascico">⭐</div><div class="ascval" id="st-avg">0</div><div class="asclbl">متوسط الطلب (دج)</div></div>
+        <div class="asc o"><div class="ascico">🚗</div><div class="ascval" id="st-del">0</div><div class="asclbl">طلبات توصيل</div></div>
+      </div>
+      <div class="chrow">
+        <div class="chcard"><h3>🍽️ أكثر الأطباق طلباً</h3><div class="bch" id="dch"></div></div>
+        <div class="chcard"><h3>📦 توزيع الطلبات</h3><div class="tch" id="tch"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="apg" id="pg-settings">
+      <div class="swrap">
+        <h3>⚙️ إعدادات الحساب</h3>
+        <div class="srow"><div class="sinf"><strong>اسم المستخدم</strong><span>للدخول للوحة</span></div><input class="sinp" id="su" value="admin"></div>
+        <div class="srow"><div class="sinf"><strong>كلمة المرور الجديدة</strong><span>اتركها فارغة للإبقاء</span></div><input class="sinp" id="sp" type="password" placeholder="••••••••"></div>
+        <div class="srow"><div class="sinf"><strong>صوت الإشعار</strong><span>عند ورود طلب جديد</span></div><button class="tog on" id="tsnd" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <div class="swrap">
+        <h3>🗄️ إعداد JSONBin</h3>
+        <div class="srow"><div class="sinf"><strong>Bin ID</strong><span>معرف قاعدة البيانات</span></div><input class="sinp" id="sbin" placeholder="6642a..."></div>
+        <div class="srow"><div class="sinf"><strong>Master Key</strong><span>مفتاح API</span></div><input class="sinp" id="skey" placeholder="$2a$10..."></div>
+      </div>
+      <button class="savbtn" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="mov" id="mov" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal">
+    <div class="mhd"><h3 id="mttl">تفاصيل الطلب</h3><button class="mcls" onclick="document.getElementById('mov').classList.remove('on')">✕</button></div>
+    <div class="mbdy" id="mbdy"></div>
+    <div class="macts" id="macts"></div>
+  </div>
+</div>
+
+<!-- NEW ORDER ALERT -->
+<div class="noa" id="noa">
+  <button class="noac" onclick="this.parentElement.classList.remove('on')">✕</button>
+  <div class="noa-ttl">🔔 طلب جديد وارد!</div>
+  <div class="noa-bdy" id="noabdy"></div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   ⚙️ JSONBIN CONFIG
+══════════════════════════════ */
+let BIN_ID  = localStorage.getItem('bh_bin')  || "69c51dbcaa77b81da91fedee";
+let API_KEY = localStorage.getItem('bh_key')  || "$2a$10$q8tKwOEicJHwrQtopxKRmu0Z1Z.cepLSZllWQL521PLKnHf8ZR9va";
+function binUrl(){ return `https://api.jsonbin.io/v3/b/${BIN_ID}`; }
+function H(){ return {'Content-Type':'application/json','X-Master-Key':API_KEY}; }
+function binOk(){ return !BIN_ID.includes('ضع') && !API_KEY.includes('ضع'); }
+
+/* ─── جلب الطلبات من JSONBin ─── */
+async function fetchOrds(){
+  if(!binOk()) return JSON.parse(localStorage.getItem('bh_orders')||'[]');
+  try{
+    const r=await fetch(binUrl()+'/latest',{headers:H()});
+    if(!r.ok) return JSON.parse(localStorage.getItem('bh_orders')||'[]');
+    const d=await r.json();
+    const ords=d.record?.orders||[];
+    localStorage.setItem('bh_orders',JSON.stringify(ords));
+    return ords;
+  }catch(e){ return JSON.parse(localStorage.getItem('bh_orders')||'[]'); }
+}
+
+/* ─── حفظ الطلبات ─── */
+async function pushOrds(orders){
+  localStorage.setItem('bh_orders',JSON.stringify(orders));
+  if(!binOk()) return;
+  try{ await fetch(binUrl(),{method:'PUT',headers:H(),body:JSON.stringify({orders})}); }catch(e){}
+}
+
+/* ─── تحديث حالة طلب ─── */
+async function updateStatus(id,status){
+  const ords=await fetchOrds();
+  const i=ords.findIndex(o=>o.id===id);
+  if(i>-1){ ords[i].status=status; await pushOrds(ords); localOrds=ords; }
+  document.getElementById('mov').classList.remove('on');
+  renderDash(); renderOrds(curF); updBdg();
+}
+
+let localOrds=[];
+let curF='all';
+let seen=new Set(JSON.parse(localStorage.getItem('bh_seen')||'[]'));
+function markSeen(id){seen.add(id);localStorage.setItem('bh_seen',JSON.stringify([...seen]));}
+
+/* ─── AUTH ─── */
+function doLogin(){
+  const u=document.getElementById('lUsr').value.trim();
+  const p=document.getElementById('lPw').value;
+  const c=JSON.parse(localStorage.getItem('bh_creds')||'{"u":"admin","p":"admin123"}');
+  if(u===c.u&&p===c.p){
+    document.getElementById('pgLogin').style.display='none';
+    document.getElementById('pgAdmin').classList.add('on');
+    initAdmin();
+  }else{
+    document.getElementById('lerr').textContent='⚠ بيانات غير صحيحة';
+    document.getElementById('lPw').value='';
+  }
+}
+document.getElementById('lPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('lUsr').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('lPw').focus();});
+function doLogout(){
+  document.getElementById('pgAdmin').classList.remove('on');
+  document.getElementById('pgLogin').style.display='flex';
+  document.getElementById('lUsr').value='';
+  document.getElementById('lPw').value='';
+  document.getElementById('lerr').textContent='';
+}
+
+/* ─── PAGES ─── */
+const PTITLES={dash:'لوحة التحكم',orders:'إدارة الطلبات',stats:'الإحصائيات',settings:'الإعدادات'};
+function showPage(id,el){
+  document.querySelectorAll('.apg').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  document.querySelectorAll('.sbi').forEach(n=>n.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('pgttl').textContent=PTITLES[id]||'';
+  if(id==='dash')renderDash();
+  if(id==='orders')renderOrds(curF);
+  if(id==='stats')renderStats();
+  if(id==='settings'){
+    document.getElementById('sbin').value=BIN_ID.includes('ضع')?'':BIN_ID;
+    document.getElementById('skey').value=API_KEY.includes('ضع')?'':API_KEY;
+  }
+}
+
+/* LABELS */
+const SL={new:'🔴 جديد',preparing:'🟠 يتحضر',ready:'🟣 جاهز',delivered:'🟢 مُسلَّم',cancelled:'⚫ ملغي'};
+const SC={new:'s-new',preparing:'s-prep',ready:'s-rdy',delivered:'s-done',cancelled:'s-can'};
+const TC={delivery:'t-del',pickup:'t-pick',dine:'t-dine'};
+function tAgo(iso){const d=(Date.now()-new Date(iso))/1000;if(d<60)return'الآن';if(d<3600)return'منذ '+Math.floor(d/60)+' د';return'منذ '+Math.floor(d/3600)+' س';}
+function fTime(iso){return new Date(iso).toLocaleTimeString('ar-DZ',{hour:'2-digit',minute:'2-digit'});}
+
+/* ─── DASHBOARD ─── */
+function renderDash(){
+  const ords=localOrds,tod=new Date().toDateString();
+  const t=ords.filter(o=>new Date(o.timestamp).toDateString()===tod);
+  document.getElementById('sc-tot').textContent=t.length;
+  document.getElementById('sc-dn').textContent=t.filter(o=>o.status==='delivered').length;
+  document.getElementById('sc-pd').textContent=t.filter(o=>['new','preparing'].includes(o.status)).length;
+  document.getElementById('sc-rv').textContent=t.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0).toLocaleString('ar-DZ');
+  const rec=ords.slice(0,5),tbl=document.getElementById('rectbl');
+  if(!rec.length){tbl.innerHTML='<div class="empt"><span class="be">📭</span>لا توجد طلبات بعد</div>';return;}
+  tbl.innerHTML='<div class="thead"><div class="th">الرقم</div><div class="th">الزبون</div><div class="th">النوع</div><div class="th">المجموع</div><div class="th">الوقت</div><div class="th">الحالة</div></div>'+rec.map(rowH).join('');
+}
+
+/* ─── ORDERS TABLE ─── */
+function renderOrds(f='all'){
+  curF=f;
+  const ords=localOrds,filt=f==='all'?ords:ords.filter(o=>o.status===f);
+  document.getElementById('ordsbdy').innerHTML=filt.length?filt.map(rowH).join(''):'<div class="empt"><span class="be">📭</span>لا توجد طلبات</div>';
+}
+function rowH(o){
+  const isN=!seen.has(o.id)&&o.status==='new';
+  return'<div class="orow'+(isN?' fl':'')+'" onclick="openModal(\''+o.id+'\')">'
+    +'<div class="oid">'+o.id+'</div>'
+    +'<div><div class="ocl">'+o.name+'</div><div class="oph">'+o.phone+'</div></div>'
+    +'<div><span class="tbdg '+(TC[o.type]||'')+'">'+o.typeLabel+'</span></div>'
+    +'<div class="otot">'+o.total.toLocaleString('ar-DZ')+' دج</div>'
+    +'<div class="otm">'+fTime(o.timestamp)+'<br>'+tAgo(o.timestamp)+'</div>'
+    +'<div><span class="sbdge '+(SC[o.status]||'')+'">'+SL[o.status]+'</span></div>'
+    +'</div>';
+}
+function filterOrds(f,btn){
+  document.querySelectorAll('.ftabs .ft').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); renderOrds(f);
+}
+
+/* ─── MODAL ─── */
+function openModal(id){
+  const o=localOrds.find(x=>x.id===id);if(!o)return;markSeen(o.id);updBdg();
+  document.getElementById('mttl').textContent='طلب '+o.id;
+  document.getElementById('mbdy').innerHTML=
+    '<div class="drow"><span class="dkey">رقم الطلب</span><span class="dval" style="font-family:Amiri,serif;color:var(--gold);font-size:1.1rem">'+o.id+'</span></div>'
+    +'<div class="drow"><span class="dkey">الاسم</span><span class="dval">'+o.name+'</span></div>'
+    +'<div class="drow"><span class="dkey">الهاتف</span><span class="dval"><a href="tel:'+o.phone+'" style="color:var(--blue)">'+o.phone+'</a></span></div>'
+    +'<div class="drow"><span class="dkey">نوع الطلب</span><span class="dval">'+o.typeLabel+'</span></div>'
+    +(o.address?'<div class="drow"><span class="dkey">العنوان</span><span class="dval">'+o.address+'</span></div>':'')
+    +(o.notes?'<div class="drow"><span class="dkey">ملاحظات</span><span class="dval">'+o.notes+'</span></div>':'')
+    +'<div class="drow"><span class="dkey">الوقت</span><span class="dval">'+new Date(o.timestamp).toLocaleString('ar-DZ')+'</span></div>'
+    +'<div class="drow"><span class="dkey">الأطباق</span><div>'+o.items.map(i=>'<div class="iln"><span class="iln-n">'+i.emoji+' '+i.name+' ×'+i.qty+'</span><span class="iln-p">'+(i.price*i.qty).toLocaleString('ar-DZ')+' دج</span></div>').join('')+'</div></div>'
+    +'<div class="mtot"><span>المجموع الكلي</span><span>'+o.total.toLocaleString('ar-DZ')+' دج</span></div>';
+  const ac=document.getElementById('macts');ac.innerHTML='';
+  if(o.status==='new'){ac.innerHTML='<button class="mab mab-p" onclick="updateStatus(\''+id+'\',\'preparing\')">🔥 بدء التحضير</button><button class="mab mab-c" onclick="updateStatus(\''+id+'\',\'cancelled\')">✕ إلغاء</button>';}
+  if(o.status==='preparing'){ac.innerHTML='<button class="mab mab-r" onclick="updateStatus(\''+id+'\',\'ready\')">🟣 جاهز</button><button class="mab mab-c" onclick="updateStatus(\''+id+'\',\'cancelled\')">✕ إلغاء</button>';}
+  if(o.status==='ready'){ac.innerHTML='<button class="mab mab-d" onclick="updateStatus(\''+id+'\',\'delivered\')">✅ تم التسليم</button>';}
+  if(['delivered','cancelled'].includes(o.status)){ac.innerHTML='<span style="color:var(--muted);font-size:.84rem">الطلب '+SL[o.status]+'</span>';}
+  document.getElementById('mov').classList.add('on');
+}
+
+/* ─── STATS ─── */
+function renderStats(){
+  const ords=localOrds,v=ords.filter(o=>o.status!=='cancelled'),rev=v.reduce((s,o)=>s+o.total,0);
+  document.getElementById('st-tot').textContent=ords.length;
+  document.getElementById('st-rv').textContent=rev.toLocaleString('ar-DZ');
+  document.getElementById('st-avg').textContent=v.length?Math.round(rev/v.length).toLocaleString('ar-DZ'):'0';
+  document.getElementById('st-del').textContent=ords.filter(o=>o.type==='delivery').length;
+  const dc={};ords.forEach(o=>o.items?.forEach(i=>{dc[i.name]=(dc[i.name]||0)+i.qty;}));
+  const top=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,6),mv=top[0]?.[1]||1;
+  const cols=['#C9A84C','#E67E22','#27AE60','#2980B9','#8E44AD','#E74C3C'];
+  document.getElementById('dch').innerHTML=top.length?top.map(([n,c],i)=>'<div class="brow"><div class="blbl">'+n+'</div><div class="btrack"><div class="bfill" style="width:'+(c/mv*100)+'%;background:'+cols[i%6]+'"><span class="bval">'+c+'</span></div></div></div>').join(''):'<div style="color:var(--muted);text-align:center;padding:16px">لا توجد بيانات</div>';
+  const types={delivery:0,pickup:0,dine:0};ords.forEach(o=>{if(o.type in types)types[o.type]++;});
+  const tC={delivery:'#2980B9',pickup:'#27AE60',dine:'#C9A84C'},tN={delivery:'توصيل 🚗',pickup:'استلام 🏠',dine:'في المطعم 🍽️'};
+  document.getElementById('tch').innerHTML=Object.entries(types).map(([t,c])=>'<div class="trow"><div class="tdot" style="background:'+tC[t]+'"></div><span class="tname">'+tN[t]+'</span><span class="tcnt" style="color:'+tC[t]+'">'+c+'</span></div>').join('');
+}
+
+/* ─── BADGE ─── */
+function updBdg(){
+  const n=localOrds.filter(o=>o.status==='new'&&!seen.has(o.id)).length;
+  const b=document.getElementById('nbdg'),bell=document.getElementById('bellbdg');
+  if(n>0){b.textContent=n;b.classList.add('on');bell.textContent=n;bell.style.display='flex';}
+  else{b.classList.remove('on');bell.style.display='none';}
+}
+
+/* ─── SOUND ─── */
+function playSound(){
+  if(!document.getElementById('tsnd').classList.contains('on'))return;
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[880,660,880].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.26,ctx.currentTime+i*.15);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.15+.2);o.start(ctx.currentTime+i*.15);o.stop(ctx.currentTime+i*.15+.2);});}catch(e){}
+}
+
+/* ─── POLLING (كل 5 ثوان) ─── */
+let knownIds=new Set(JSON.parse(localStorage.getItem('bh_orders')||'[]').map(o=>o.id));
+async function poll(){
+  if(!document.getElementById('pgAdmin').classList.contains('on'))return;
+  const fresh=await fetchOrds();
+  const newOnes=fresh.filter(o=>o.status==='new'&&!knownIds.has(o.id));
+  newOnes.forEach(o=>knownIds.add(o.id));
+  localOrds=fresh;
+  if(newOnes.length){
+    const o=newOnes[0];
+    document.getElementById('noabdy').innerHTML='<strong>'+o.name+'</strong> — '+o.typeLabel+'<br>'+o.items.slice(0,3).map(i=>i.emoji+' '+i.name).join(' · ')+'<br><strong style="color:var(--gold)">'+o.total.toLocaleString('ar-DZ')+' دج</strong>';
+    document.getElementById('noa').classList.add('on');
+    setTimeout(()=>document.getElementById('noa').classList.remove('on'),7000);
+    playSound();
+  }
+  updBdg();
+  const ap=document.querySelector('.apg.on')?.id?.replace('pg-','');
+  if(ap==='dash')renderDash();
+  if(ap==='orders')renderOrds(curF);
+  if(ap==='stats')renderStats();
+}
+
+/* ─── SETTINGS ─── */
+function saveSettings(){
+  const u=document.getElementById('su').value.trim(),p=document.getElementById('sp').value;
+  const c=JSON.parse(localStorage.getItem('bh_creds')||'{"u":"admin","p":"admin123"}');
+  if(u)c.u=u;if(p)c.p=p;
+  localStorage.setItem('bh_creds',JSON.stringify(c));
+  const b=document.getElementById('sbin').value.trim(),k=document.getElementById('skey').value.trim();
+  if(b){BIN_ID=b;localStorage.setItem('bh_bin',b);}
+  if(k){API_KEY=k;localStorage.setItem('bh_key',k);}
+  const t=document.createElement('div');t.style.cssText='position:fixed;bottom:26px;right:50%;transform:translateX(50%);background:var(--dark);color:var(--gold);padding:10px 20px;border-radius:20px;z-index:999;font-size:.85rem;font-family:Tajawal,sans-serif;';
+  t.textContent='✅ تم حفظ الإعدادات';document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+
+/* ─── CLOCK ─── */
+function tickClk(){const el=document.getElementById('clk');if(el)el.textContent=new Date().toLocaleTimeString('ar-DZ',{hour:'2-digit',minute:'2-digit'});}
+
+/* ─── INIT ─── */
+let started=false;
+function initAdmin(){
+  fetchOrds().then(o=>{localOrds=o;renderDash();updBdg();});
+  if(!started){
+    started=true;
+    tickClk();setInterval(tickClk,1000);
+    setInterval(poll,5000);
+    if(!binOk()){
+      const b=document.createElement('div');
+      b.style.cssText='position:fixed;top:0;left:0;right:0;background:var(--gold);color:var(--dark);padding:10px 16px;text-align:center;z-index:9998;font-size:.83rem;font-family:Tajawal,sans-serif;display:flex;align-items:center;justify-content:center;gap:12px;';
+      b.innerHTML='⚙️ JSONBin غير مفعّل — الطلبات محلية فقط. اذهب إلى <strong>الإعدادات</strong> لإدخال بياناتك. <button onclick="this.parentElement.remove()" style="background:rgba(0,0,0,.15);border:none;padding:3px 10px;border-radius:5px;cursor:pointer;font-family:Tajawal,sans-serif;">✕</button>';
+      document.body.prepend(b);
+    }
+  }
+}
+</script>
+</body>
+</html>
